@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reuseable global helpers
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn();
+    }
+
+    function isValidId(id) {
+      return id is string && 
+             id.size() <= 128 && 
+             id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidEvent(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 128 &&
+             data.description is string && data.description.size() <= 1000 &&
+             data.date is string && data.date.size() <= 32 &&
+             data.time is string && data.time.size() <= 16 &&
+             data.location is string && data.location.size() <= 256 &&
+             data.capacity is int && data.capacity >= 1 && data.capacity <= 10000 &&
+             data.registeredCount is int && data.registeredCount >= 0 &&
+             data.isPaid is bool &&
+             data.price is number && data.price >= 0 &&
+             data.pixKey is string && data.pixKey.size() <= 256 &&
+             (!('flyerUrl' in data) || data.flyerUrl is string) &&
+             (!('logoUrl' in data) || data.logoUrl is string) &&
+             data.status is string && (data.status == "open" || data.status == "closed") &&
+             data.active is bool;
+    }
+
+    function isValidRegistration(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.eventId is string && data.eventId.size() <= 128 &&
+             data.name is string && data.name.size() <= 128 &&
+             data.coleteName is string && data.coleteName.size() <= 128 &&
+             data.regional is string && data.regional.size() <= 128 &&
+             data.division is string && data.division.size() <= 128 &&
+             data.phone is string && data.phone.size() <= 32;
+    }
+
+    // Rules for events
+    match /events/{eventId} {
+      // Allow public to read single event or list active events
+      allow read: if true;
+      
+      // Allow creation of active event
+      allow create: if (
+        // Option A: Admin can create any valid event
+        (isAdmin() && isValidEvent(incoming()) && incoming().createdAt == request.time)
+        ||
+        // Option B: Deterministic initialization of the default event
+        (eventId == 'default_event' &&
+         isValidEvent(incoming()) &&
+         incoming().title == "GRANDE ENCONTRO ANUAL - INSANOS MC" &&
+         incoming().registeredCount == 0 &&
+         incoming().active == true &&
+         incoming().createdAt == request.time)
+      );
+      
+      // Allow updates to events
+      allow update: if (
+        // Action: Public registration increment count
+        (existing().status == "open" &&
+         existing().active == true &&
+         existing().registeredCount < existing().capacity &&
+         incoming().diff(existing()).affectedKeys().hasOnly(['registeredCount']) &&
+         incoming().registeredCount == existing().registeredCount + 1)
+        ||
+        // Action: Admin full update
+        (isAdmin() && isValidEvent(incoming()) && incoming().createdAt == existing().createdAt)
+      );
+      
+      // Only admin can delete events
+      allow delete: if isAdmin();
+    }
+    
+    // Rules for registrations (inscrições)
+    match /registrations/{registrationId} {
+      // Only admin can read/list all registrations
+      allow read: if isAdmin();
+      
+      // Public can register for an active and open event
+      allow create: if (
+        isValidRegistration(incoming()) &&
+        incoming().registeredAt == request.time &&
+        get(/databases/$(database)/documents/events/$(incoming().eventId)).data.status == "open" &&
+        get(/databases/$(database)/documents/events/$(incoming().eventId)).data.active == true
+      );
+      
+      // Only admin can edit or delete registrations
+      allow update, delete: if isAdmin();
+    }
+  }
+}

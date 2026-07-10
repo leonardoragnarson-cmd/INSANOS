@@ -1,0 +1,53 @@
+{
+  "entities": {
+    "MCEvent": {
+      "title": "MCEvent",
+      "description": "An official event of Insanos MC",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "location": { "type": "string" },
+        "capacity": { "type": "number" },
+        "registeredCount": { "type": "number" },
+        "isPaid": { "type": "boolean" },
+        "price": { "type": "number" },
+        "pixKey": { "type": "string" },
+        "flyerUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "closed"] },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["id", "title", "date", "time", "location", "capacity", "active"]
+    },
+    "Registration": {
+      "title": "Registration",
+      "description": "A registration for an Insanos MC event",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "name": { "type": "string" },
+        "coleteName": { "type": "string" },
+        "regional": { "type": "string" },
+        "division": { "type": "string" },
+        "phone": { "type": "string" },
+        "registeredAt": { "type": "object" }
+      },
+      "required": ["id", "eventId", "name", "coleteName", "regional", "division", "phone"]
+    }
+  },
+  "firestore": {
+    "/events/{eventId}": {
+      "schema": "MCEvent",
+      "description": "Collection of events"
+    },
+    "/registrations/{registrationId}": {
+      "schema": "Registration",
+      "description": "Collection of registrations"
+    }
+  }
+}

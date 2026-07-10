@@ -1,0 +1,6 @@
+{
+  "name": "Eventos Insanos MC",
+  "description": "Sistema de gerenciamento de eventos do Insanos MC com inscrições em tempo real e painel administrativo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
