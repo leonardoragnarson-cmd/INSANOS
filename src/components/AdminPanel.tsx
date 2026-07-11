@@ -59,7 +59,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 interface AdminPanelProps {
   activeEvent: MCEvent | null;
@@ -389,7 +389,7 @@ export default function AdminPanel({ activeEvent, loadingEvent }: AdminPanelProp
     
     const formattedData = registrations.map((reg, index) => ({
       'Nº': index + 1,
-      'Grau': reg.name,
+      'Nome': reg.name,
       'Nome de Colete': reg.coleteName,
       'Regional': reg.regional,
       'Divisão': reg.division,
@@ -438,7 +438,7 @@ export default function AdminPanel({ activeEvent, loadingEvent }: AdminPanelProp
     docPdf.text(`Total Inscritos: ${registrations.length}`, 14, 57);
 
     // Table Content
-    const headers = [['Nº', 'Grau', 'Nome de Colete', 'Regional', 'Divisão', 'Telefone']];
+    const headers = [['Nº', 'Nome', 'Nome de Colete', 'Regional', 'Divisão', 'Telefone']];
     const rows = registrations.map((r, idx) => [
       idx + 1,
       r.name,
@@ -448,7 +448,7 @@ export default function AdminPanel({ activeEvent, loadingEvent }: AdminPanelProp
       r.phone
     ]);
 
-    (docPdf as any).autoTable({
+    autoTable(docPdf, {
       startY: 62,
       head: headers,
       body: rows,
@@ -1134,7 +1134,7 @@ export default function AdminPanel({ activeEvent, loadingEvent }: AdminPanelProp
               </div>
               <input
                 type="text"
-                placeholder="PESQUISAR POR GRAU, COLETE, REGIONAL OU DIVISÃO..."
+                placeholder="PESQUISAR POR NOME, COLETE, REGIONAL OU DIVISÃO..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-black/40 border border-white/10 hover:border-white/20 focus:border-amber-500/80 rounded-sm py-3 pl-11 pr-4 text-white text-[10px] uppercase tracking-wider placeholder-zinc-600 focus:outline-none transition-all"
@@ -1178,7 +1178,7 @@ export default function AdminPanel({ activeEvent, loadingEvent }: AdminPanelProp
                 <thead className="bg-[#0c0c0c] text-[9px] uppercase font-bold text-zinc-500 border-b border-white/10 font-mono tracking-widest">
                   <tr>
                     <th className="px-6 py-4">Nº</th>
-                    <th className="px-6 py-4">Grau</th>
+                    <th className="px-6 py-4">Nome</th>
                     <th className="px-6 py-4">Nome de Colete</th>
                     <th className="px-6 py-4">Regional</th>
                     <th className="px-6 py-4">Divisão</th>
