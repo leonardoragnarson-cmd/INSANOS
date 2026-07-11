@@ -137,7 +137,7 @@ export default function App() {
             Plataforma oficial de controle de presença de eventos do Insanos MC. Segurança e controle integrado em tempo real.
           </p>
           <div className="text-[9px] text-zinc-600 uppercase tracking-widest font-mono">
-            &copy; {new Date().getFullYear()} Insanos MC. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} Insanos MC. Todos os direitos reservados. Bior
           </div>
         </div>
       </footer>
